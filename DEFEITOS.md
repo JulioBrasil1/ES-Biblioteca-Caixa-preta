@@ -42,3 +42,57 @@
 **Descrição:** A especificação estabelece um prazo de sete dias para visitantes, mas a data retornada corresponde a dez dias após a retirada.
 
 **Observação:** Esta falha pode estar relacionada ao Defeito 01, identificado no método `prazoDias`. A causa interna não pode ser confirmada nesta fase de caixa-preta.
+
+### Defeito 04 — Cobrança incorreta na mudança de faixa
+
+- **Método:** `multaCentavos`
+- **Entradas:** `(ALUNO, 11)` e `(VISITANTE, 11)`
+- **Resultado esperado:** 1200 centavos em ambos os casos
+- **Resultado obtido:** 1100 centavos em ambos os casos
+- **Técnica:** Análise de valores-limite
+- **Fronteira:** 10 para 11 dias cobrados
+- **Testes:** `multaAlunoComOnzeDiasDeAtraso`, `multaVisitanteComOnzeDiasDeAtraso`
+
+**Descrição:** A especificação determina que o 11º dia cobrado custe 200 centavos. Entretanto, o sistema retorna 1100 centavos, quando o valor correto seria 1200.
+
+### Defeito 05 — Carência incorreta para professores
+
+- **Método:** `multaCentavos`
+- **Entradas e resultados:**
+
+| Dias de atraso | Esperado | Obtido |
+|---|---:|---:|
+| 3 | 0 | 100 |
+| 4 | 100 | 200 |
+| 13 | 1000 | 1100 |
+| 14 | 1200 | 1400 |
+
+- **Técnicas:** Partição de equivalência e análise de valores-limite
+- **Fronteiras:** Fim da carência e mudança de faixa após a carência
+- **Testes:** `multaProfessorComTresDiasDeAtraso`, `multaProfessorComQuatroDiasDeAtraso`, `multaProfessorComTrezeDiasDeAtraso`, `multaProfessorComQuatorzeDiasDeAtraso`
+
+**Descrição:** Os resultados não respeitam a carência de três dias prevista para professores. Foram observadas cobranças antecipadas e valores incorretos após a carência.
+
+### Defeito 06 — Multa ultrapassa o teto máximo
+
+- **Método:** `multaCentavos`
+- **Entradas:** `(ALUNO, 31)` e `(PROFESSOR, 33)`
+- **Resultado esperado:** 5000 centavos em ambos os casos
+- **Resultado obtido:** 5200 centavos em ambos os casos
+- **Técnica:** Análise de valores-limite
+- **Fronteira:** Teto máximo de 5000 centavos
+- **Testes:** `multaAlunoComTrintaEUmDiasDeAtraso`, `multaProfessorComTrintaETresDiasDeAtraso`
+
+**Descrição:** O método permite que a multa ultrapasse o limite máximo de 5000 centavos por empréstimo, contrariando a especificação.
+
+### Defeito 07 — Dias negativos não geram exceção
+
+- **Método:** `multaCentavos`
+- **Entrada:** `(ALUNO, -1)`
+- **Resultado esperado:** `IllegalArgumentException`
+- **Resultado obtido:** Nenhuma exceção lançada
+- **Técnicas:** Partição de equivalência inválida e análise de valor-limite
+- **Fronteira:** -1 dia, imediatamente abaixo do mínimo válido (0)
+- **Teste:** `multaComDiasNegativosDeveLancarExcecao`
+
+**Descrição:** O método aceita um número negativo de dias de atraso sem lançar a exceção exigida pela especificação.

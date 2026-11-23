@@ -147,5 +147,118 @@ class RegrasBibliotecaTest {
             () -> regras.limiteEmprestimos(null));
     }
 
+    // ========================================
+    // TESTES: multaCentavos
+    // ========================================
+
+    // Sem atraso e início da cobrança
+
+    @Test
+    void multaAlunoSemAtrasoDeveSerZero() {
+        assertEquals(0, regras.multaCentavos(TipoUsuario.ALUNO, 0));
+    }
+
+    @Test
+    void multaAlunoComUmDiaDeAtraso() {
+        assertEquals(100, regras.multaCentavos(TipoUsuario.ALUNO, 1));
+    }
+
+    // Fronteira entre primeira e segunda faixa de cobrança
+
+    @Test
+    void multaAlunoComNoveDiasDeAtraso() {
+        assertEquals(900, regras.multaCentavos(TipoUsuario.ALUNO, 9));
+    }
+
+    @Test
+    void multaAlunoComDezDiasDeAtraso() {
+        assertEquals(1000, regras.multaCentavos(TipoUsuario.ALUNO, 10));
+    }
+
+    @Test
+    void multaAlunoComOnzeDiasDeAtraso() {
+        assertEquals(1200, regras.multaCentavos(TipoUsuario.ALUNO, 11));
+    }
+
+    @Test
+    void multaAlunoComDozeDiasDeAtraso() {
+        assertEquals(1400, regras.multaCentavos(TipoUsuario.ALUNO, 12));
+    }
+
+    // Fronteira do teto de 5000 centavos
+
+    @Test
+    void multaAlunoComVinteENoveDiasDeAtraso() {
+        assertEquals(4800, regras.multaCentavos(TipoUsuario.ALUNO, 29));
+    }
+
+    @Test
+    void multaAlunoComTrintaDiasDeAtraso() {
+        assertEquals(5000, regras.multaCentavos(TipoUsuario.ALUNO, 30));
+    }
+
+    @Test
+    void multaAlunoComTrintaEUmDiasDeAtraso() {
+        assertEquals(5000, regras.multaCentavos(TipoUsuario.ALUNO, 31));
+    }
+
+    // Carência de três dias para professores
+
+    @Test
+    void multaProfessorComDoisDiasDeAtraso() {
+        assertEquals(0, regras.multaCentavos(TipoUsuario.PROFESSOR, 2));
+    }
+
+    @Test
+    void multaProfessorComTresDiasDeAtraso() {
+        assertEquals(0, regras.multaCentavos(TipoUsuario.PROFESSOR, 3));
+    }
+
+    @Test
+    void multaProfessorComQuatroDiasDeAtraso() {
+        assertEquals(100, regras.multaCentavos(TipoUsuario.PROFESSOR, 4));
+    }
+
+    @Test
+    void multaProfessorComTrezeDiasDeAtraso() {
+        assertEquals(1000, regras.multaCentavos(TipoUsuario.PROFESSOR, 13));
+    }
+
+    @Test
+    void multaProfessorComQuatorzeDiasDeAtraso() {
+        assertEquals(1200, regras.multaCentavos(TipoUsuario.PROFESSOR, 14));
+    }
+
+    @Test
+    void multaProfessorComTrintaETresDiasDeAtraso() {
+        assertEquals(5000, regras.multaCentavos(TipoUsuario.PROFESSOR, 33));
+    }
+
+    // Visitantes não possuem carência
+
+    @Test
+    void multaVisitanteComUmDiaDeAtraso() {
+        assertEquals(100, regras.multaCentavos(TipoUsuario.VISITANTE, 1));
+    }
+
+    @Test
+    void multaVisitanteComOnzeDiasDeAtraso() {
+        assertEquals(1200, regras.multaCentavos(TipoUsuario.VISITANTE, 11));
+    }
+
+    // Entradas inválidas
+
+    @Test
+    void multaComDiasNegativosDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.multaCentavos(TipoUsuario.ALUNO, -1));
+    }
+
+    @Test
+    void multaComTipoNuloDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.multaCentavos(null, 1));
+    }
+
 
 }
