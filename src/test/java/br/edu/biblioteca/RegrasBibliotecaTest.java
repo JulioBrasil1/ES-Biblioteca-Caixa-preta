@@ -260,5 +260,166 @@ class RegrasBibliotecaTest {
             () -> regras.multaCentavos(null, 1));
     }
 
+    // ========================================
+    // TESTES: podeEmprestar
+    // ========================================
+
+    // Limites de emprestimos - ALUNO
+
+    @Test
+    void alunoSemEmprestimosPodeEmprestar() {
+        assertTrue(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 0, 0, false));
+    }
+
+    @Test
+    void alunoComDoisEmprestimosPodeEmprestar() {
+        assertTrue(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 2, 0, false));
+    }
+
+    @Test
+    void alunoComTresEmprestimosNaoPodeEmprestar() {
+        assertFalse(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 3, 0, false));
+    }
+
+    @Test
+    void alunoComQuatroEmprestimosNaoPodeEmprestar() {
+        assertFalse(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 4, 0, false));
+    }
+
+    // Limites de emprestimos - PROFESSOR
+
+    @Test
+    void professorComSeteEmprestimosPodeEmprestar() {
+        assertTrue(regras.podeEmprestar(
+            TipoUsuario.PROFESSOR, 7, 0, false));
+    }
+
+    @Test
+    void professorComOitoEmprestimosNaoPodeEmprestar() {
+        assertFalse(regras.podeEmprestar(
+            TipoUsuario.PROFESSOR, 8, 0, false));
+    }
+
+    @Test
+    void professorComNoveEmprestimosNaoPodeEmprestar() {
+        assertFalse(regras.podeEmprestar(
+            TipoUsuario.PROFESSOR, 9, 0, false));
+    }
+
+    // Limites de emprestimos - VISITANTE
+
+    @Test
+    void visitanteSemEmprestimosPodeEmprestar() {
+        assertTrue(regras.podeEmprestar(
+            TipoUsuario.VISITANTE, 0, 0, false));
+    }
+
+    @Test
+    void visitanteComUmEmprestimoNaoPodeEmprestar() {
+        assertFalse(regras.podeEmprestar(
+            TipoUsuario.VISITANTE, 1, 0, false));
+    }
+
+    @Test
+    void visitanteComDoisEmprestimosNaoPodeEmprestar() {
+        assertFalse(regras.podeEmprestar(
+            TipoUsuario.VISITANTE, 2, 0, false));
+    }
+
+    // Fronteira da multa pendente
+
+    @Test
+    void multaZeroPermiteEmprestimo() {
+        assertTrue(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 0, 0, false));
+    }
+
+    @Test
+    void multaDe999CentavosPermiteEmprestimo() {
+        assertTrue(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 0, 999, false));
+    }
+
+    @Test
+    void multaDe1000CentavosPermiteEmprestimo() {
+        assertTrue(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 0, 1000, false));
+    }
+
+    @Test
+    void multaDe1001CentavosBloqueiaEmprestimo() {
+        assertFalse(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 0, 1001, false));
+    }
+
+    // Condicao de atraso
+
+    @Test
+    void usuarioComAtrasoNaoPodeEmprestar() {
+        assertFalse(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 0, 0, true));
+    }
+
+    @Test
+    void usuarioSemAtrasoPodeEmprestar() {
+        assertTrue(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 0, 0, false));
+    }
+
+    // Combinacoes de condicoes
+
+    @Test
+    void usuarioComLimiteAtingidoEMultaAltaNaoPodeEmprestar() {
+        assertFalse(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 3, 1001, false));
+    }
+
+    @Test
+    void usuarioComMultaAltaEAtrasoNaoPodeEmprestar() {
+        assertFalse(regras.podeEmprestar(
+            TipoUsuario.ALUNO, 0, 1001, true));
+    }
+
+    // Entradas invalidas
+
+    @Test
+    void emprestimosNegativosDevemLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.podeEmprestar(
+                TipoUsuario.ALUNO, -1, 0, false));
+    }
+
+    @Test
+    void multaNegativaDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.podeEmprestar(
+                TipoUsuario.ALUNO, 0, -1, false));
+    }
+
+    @Test
+    void tipoNuloEmPodeEmprestarDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.podeEmprestar(
+                null, 0, 0, false));
+    }
+
+    @Test
+    void emprestimosNegativosComMultaAltaDevemLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.podeEmprestar(
+                TipoUsuario.ALUNO, -1, 1001, false));
+    }
+
+    @Test
+    void multaNegativaComAtrasoDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.podeEmprestar(
+                TipoUsuario.ALUNO, 0, -1, true));
+    }
+
 
 }

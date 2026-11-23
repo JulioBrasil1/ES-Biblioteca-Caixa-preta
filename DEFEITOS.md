@@ -96,3 +96,66 @@
 - **Teste:** `multaComDiasNegativosDeveLancarExcecao`
 
 **Descrição:** O método aceita um número negativo de dias de atraso sem lançar a exceção exigida pela especificação.
+
+### Defeito 08 — Empréstimo permitido com limite atingido
+
+- **Método:** `podeEmprestar`
+- **Entradas e resultados:**
+
+| Entrada (tipo, ativos, multa, atraso) | Esperado | Obtido |
+|---|---|---|
+| ALUNO, 3, 0, false | false | true |
+| PROFESSOR, 8, 0, false | false | true |
+| VISITANTE, 1, 0, false | false | true |
+
+- **Técnica:** Análise de valores-limite
+- **Fronteiras:** 3 empréstimos para ALUNO, 8 para PROFESSOR e 1 para VISITANTE
+- **Testes:** `alunoComTresEmprestimosNaoPodeEmprestar`, `professorComOitoEmprestimosNaoPodeEmprestar`, `visitanteComUmEmprestimoNaoPodeEmprestar`
+
+**Descrição:** O método permite novos empréstimos mesmo quando o usuário já atingiu o limite máximo de empréstimos ativos estabelecido pela especificação.
+
+### Defeito 09 — Multa superior ao limite não bloqueia empréstimo
+
+- **Método:** `podeEmprestar`
+- **Entrada:** `(ALUNO, 0, 1001, false)`
+- **Resultado esperado:** false
+- **Resultado obtido:** true
+- **Técnica:** Análise de valores-limite
+- **Fronteira:** 1000 para 1001 centavos
+- **Teste:** `multaDe1001CentavosBloqueiaEmprestimo`
+
+**Descrição:** A especificação permite novos empréstimos somente quando a multa pendente é menor ou igual a 1000 centavos. O sistema permite empréstimos com 1001 centavos de multa pendente.
+
+### Defeito 10 — Usuário com atraso pode realizar novo empréstimo
+
+- **Método:** `podeEmprestar`
+- **Entrada:** `(ALUNO, 0, 0, true)`
+- **Resultado esperado:** false
+- **Resultado obtido:** true
+- **Técnica:** Partição de equivalência
+- **Classe:** Válida — usuário com empréstimo em atraso
+- **Teste:** `usuarioComAtrasoNaoPodeEmprestar`
+
+**Descrição:** O sistema permite um novo empréstimo mesmo quando o parâmetro `possuiAtraso` é verdadeiro, contrariando a especificação.
+
+### Defeito 11 — Multa pendente negativa não gera exceção
+
+- **Método:** `podeEmprestar`
+- **Entradas:** `(ALUNO, 0, -1, false)` e `(ALUNO, 0, -1, true)`
+- **Resultado esperado:** IllegalArgumentException
+- **Resultado obtido:** Nenhuma exceção lançada
+- **Técnicas:** Partição de equivalência inválida e análise de valores-limite
+- **Fronteira:** -1 centavo, imediatamente abaixo do mínimo válido (0)
+- **Testes:** `multaNegativaDeveLancarExcecao`, `multaNegativaComAtrasoDeveLancarExcecao`
+
+**Descrição:** O método aceita valores negativos para a multa pendente sem lançar a exceção exigida pela especificação.
+
+### Evidência complementar — Condições impeditivas combinadas
+
+- **Método:** `podeEmprestar`
+- **Entrada:** `(ALUNO, 3, 1001, false)`
+- **Resultado esperado:** false
+- **Resultado obtido:** true
+- **Teste:** `usuarioComLimiteAtingidoEMultaAltaNaoPodeEmprestar`
+
+**Descrição:** O sistema permite um empréstimo mesmo quando duas condições impeditivas estão presentes simultaneamente. Essa falha reforça os Defeitos 08 e 09, sem necessariamente representar uma causa independente.
