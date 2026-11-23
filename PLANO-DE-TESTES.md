@@ -182,3 +182,71 @@ As nove falhas foram agrupadas em quatro comportamentos incorretos, documentados
 **Observação:** Um dos testes também demonstrou comportamento incorreto quando o limite de empréstimos e o limite de multa são violados simultaneamente.
 
 As nove falhas foram agrupadas em quatro comportamentos incorretos, documentados nos Defeitos 08 a 11 do arquivo `DEFEITOS.md`.
+
+## Método: podeRenovar(TipoUsuario tipo, int renovacoesFeitas, boolean possuiReserva, boolean emAtraso)
+
+**Técnicas:** Partição de equivalência e análise de valores-limite.
+
+### Classes de equivalência
+
+| Classe | Descrição | Resultado esperado |
+|---|---|---|
+| CE1 — Válida | ALUNO com 0 ou 1 renovação, sem reserva e sem atraso | true |
+| CE2 — Válida | ALUNO com 2 ou mais renovações | false |
+| CE3 — Válida | PROFESSOR com 0 a 2 renovações, sem reserva e sem atraso | true |
+| CE4 — Válida | PROFESSOR com 3 ou mais renovações | false |
+| CE5 — Válida | VISITANTE com quantidade válida de renovações | false |
+| CE6 — Válida | Usuário com reserva existente | false |
+| CE7 — Válida | Usuário com empréstimo em atraso | false |
+| CE8 — Válida | Múltiplas condições impeditivas | false |
+| CE9 — Inválida | Quantidade negativa de renovações | IllegalArgumentException |
+| CE10 — Inválida | Tipo de usuário nulo | IllegalArgumentException |
+
+### Análise de valores-limite
+
+| Fronteira | Valores testados | Resultados esperados |
+|---|---|---|
+| Limite de ALUNO (2) | 1, 2, 3 | true, false, false |
+| Limite de PROFESSOR (3) | 2, 3 | true, false |
+| Mínimo válido de renovações | -1, 0 | Exceção, comportamento conforme tipo |
+| Proibição para VISITANTE | 0, 1 | false, false |
+
+### Casos de teste implementados
+
+| Teste | Entrada (tipo, renovações, reserva, atraso) | Esperado |
+|---|---|---|
+| renovarAlunoSemRenovacoesDevePermitir | ALUNO, 0, false, false | true |
+| renovarAlunoComUmaRenovacaoDevePermitir | ALUNO, 1, false, false | true |
+| renovarAlunoComDuasRenovacoesDeveBloquear | ALUNO, 2, false, false | false |
+| renovarAlunoComTresRenovacoesDeveBloquear | ALUNO, 3, false, false | false |
+| renovarProfessorSemRenovacoesDevePermitir | PROFESSOR, 0, false, false | true |
+| renovarProfessorComUmaRenovacaoDevePermitir | PROFESSOR, 1, false, false | true |
+| renovarProfessorComDuasRenovacoesDevePermitir | PROFESSOR, 2, false, false | true |
+| renovarProfessorComTresRenovacoesDeveBloquear | PROFESSOR, 3, false, false | false |
+| renovarVisitanteSemRenovacoesDeveBloquear | VISITANTE, 0, false, false | false |
+| renovarVisitanteComUmaRenovacaoDeveBloquear | VISITANTE, 1, false, false | false |
+| renovarVisitanteComReservaDeveBloquear | VISITANTE, 0, true, false | false |
+| renovarVisitanteEmAtrasoDeveBloquear | VISITANTE, 0, false, true | false |
+| renovarAlunoComReservaDeveBloquear | ALUNO, 0, true, false | false |
+| renovarAlunoEmAtrasoDeveBloquear | ALUNO, 0, false, true | false |
+| renovarProfessorComReservaDeveBloquear | PROFESSOR, 0, true, false | false |
+| renovarProfessorEmAtrasoDeveBloquear | PROFESSOR, 0, false, true | false |
+| renovarAlunoSemReservaESemAtrasoDevePermitir | ALUNO, 1, false, false | true |
+| renovarAlunoComReservaEAtrasoDeveBloquear | ALUNO, 0, true, true | false |
+| renovarProfessorNoLimiteComReservaDeveBloquear | PROFESSOR, 3, true, false | false |
+| renovarAlunoNoLimiteEmAtrasoDeveBloquear | ALUNO, 2, false, true | false |
+| renovarComQuantidadeNegativaDeveLancarExcecao | ALUNO, -1, false, false | IllegalArgumentException |
+| renovarComTipoNuloDeveLancarExcecao | null, 0, false, false | IllegalArgumentException |
+| renovarVisitanteComQuantidadeNegativaDeveLancarExcecao | VISITANTE, -1, false, false | IllegalArgumentException |
+
+**Critério de aprovação:** A renovação deve ser permitida apenas para alunos e professores abaixo de seus respectivos limites, sem reserva e sem atraso. Visitantes não podem renovar. Entradas inválidas devem lançar `IllegalArgumentException`.
+
+**Resultado da execução:** Foram executados 23 testes, dos quais 20 passaram e 3 falharam, sem erros de execução.
+
+**Defeitos identificados:**
+- Professor consegue renovar mesmo após atingir o limite de três renovações.
+- Visitantes conseguem renovar empréstimos, apesar de a especificação proibir essa operação.
+
+As três falhas foram agrupadas em dois comportamentos incorretos, documentados nos Defeitos 12 e 13 do arquivo `DEFEITOS.md`.
+
+Os demais testes passaram, incluindo os casos de reserva existente, empréstimo em atraso, entradas inválidas e limite de renovação para alunos.

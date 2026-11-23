@@ -159,3 +159,31 @@
 - **Teste:** `usuarioComLimiteAtingidoEMultaAltaNaoPodeEmprestar`
 
 **Descrição:** O sistema permite um empréstimo mesmo quando duas condições impeditivas estão presentes simultaneamente. Essa falha reforça os Defeitos 08 e 09, sem necessariamente representar uma causa independente.
+
+### Defeito 12 — Professor pode renovar após atingir o limite
+
+- **Método:** `podeRenovar`
+- **Entrada:** `(PROFESSOR, 3, false, false)`
+- **Resultado esperado:** `false`
+- **Resultado obtido:** `true`
+- **Técnica:** Análise de valores-limite
+- **Fronteira:** 3 renovações realizadas, limite máximo permitido para professores
+- **Teste:** `renovarProfessorComTresRenovacoesDeveBloquear`
+
+**Descrição:** O sistema permite que um professor realize uma nova renovação mesmo quando já efetuou três renovações. A especificação estabelece que professores podem renovar no máximo três vezes, portanto uma quarta renovação deve ser bloqueada.
+
+### Defeito 13 — Visitantes conseguem renovar empréstimos
+
+- **Método:** `podeRenovar`
+- **Entradas e resultados:**
+
+| Entrada (tipo, renovações, reserva, atraso) | Esperado | Obtido |
+|---|---|---|
+| VISITANTE, 0, false, false | false | true |
+| VISITANTE, 1, false, false | false | true |
+
+- **Técnica:** Partição de equivalência
+- **Classe:** VISITANTE com quantidade válida de renovações
+- **Testes:** `renovarVisitanteSemRenovacoesDeveBloquear`, `renovarVisitanteComUmaRenovacaoDeveBloquear`
+
+**Descrição:** O sistema permite renovações para usuários do tipo VISITANTE, contrariando a regra de que visitantes nunca podem renovar empréstimos. O comportamento incorreto foi observado tanto com zero quanto com uma renovação anterior.

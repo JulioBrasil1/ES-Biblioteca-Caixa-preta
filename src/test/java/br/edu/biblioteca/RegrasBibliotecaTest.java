@@ -3,6 +3,10 @@ package br.edu.biblioteca;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.time.LocalDate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
@@ -419,6 +423,163 @@ class RegrasBibliotecaTest {
         assertThrows(IllegalArgumentException.class,
             () -> regras.podeEmprestar(
                 TipoUsuario.ALUNO, 0, -1, true));
+    }
+
+    // ========================================
+    // TESTES: podeRenovar
+    // ========================================
+
+    // ALUNO: limite de duas renovacoes
+
+    @Test
+    void renovarAlunoSemRenovacoesDevePermitir() {
+        assertTrue(regras.podeRenovar(
+            TipoUsuario.ALUNO, 0, false, false));
+    }
+
+    @Test
+    void renovarAlunoComUmaRenovacaoDevePermitir() {
+        assertTrue(regras.podeRenovar(
+            TipoUsuario.ALUNO, 1, false, false));
+    }
+
+    @Test
+    void renovarAlunoComDuasRenovacoesDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.ALUNO, 2, false, false));
+    }
+
+    @Test
+    void renovarAlunoComTresRenovacoesDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.ALUNO, 3, false, false));
+    }
+
+    // PROFESSOR: limite de tres renovacoes
+
+    @Test
+    void renovarProfessorSemRenovacoesDevePermitir() {
+        assertTrue(regras.podeRenovar(
+            TipoUsuario.PROFESSOR, 0, false, false));
+    }
+
+    @Test
+    void renovarProfessorComUmaRenovacaoDevePermitir() {
+        assertTrue(regras.podeRenovar(
+            TipoUsuario.PROFESSOR, 1, false, false));
+    }
+
+    @Test
+    void renovarProfessorComDuasRenovacoesDevePermitir() {
+        assertTrue(regras.podeRenovar(
+            TipoUsuario.PROFESSOR, 2, false, false));
+    }
+
+    @Test
+    void renovarProfessorComTresRenovacoesDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.PROFESSOR, 3, false, false));
+    }
+
+    // VISITANTE: renovacao nunca permitida
+
+    @Test
+    void renovarVisitanteSemRenovacoesDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.VISITANTE, 0, false, false));
+    }
+
+    @Test
+    void renovarVisitanteComUmaRenovacaoDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.VISITANTE, 1, false, false));
+    }
+
+    @Test
+    void renovarVisitanteComReservaDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.VISITANTE, 0, true, false));
+    }
+
+    @Test
+    void renovarVisitanteEmAtrasoDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.VISITANTE, 0, false, true));
+    }
+
+    // Reserva e atraso como impedimentos
+
+    @Test
+    void renovarAlunoComReservaDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.ALUNO, 0, true, false));
+    }
+
+    @Test
+    void renovarAlunoEmAtrasoDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.ALUNO, 0, false, true));
+    }
+
+    @Test
+    void renovarProfessorComReservaDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.PROFESSOR, 0, true, false));
+    }
+
+    @Test
+    void renovarProfessorEmAtrasoDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.PROFESSOR, 0, false, true));
+    }
+
+    @Test
+    void renovarAlunoSemReservaESemAtrasoDevePermitir() {
+        assertTrue(regras.podeRenovar(
+            TipoUsuario.ALUNO, 1, false, false));
+    }
+
+    // Combinacoes de impedimentos
+
+    @Test
+    void renovarAlunoComReservaEAtrasoDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.ALUNO, 0, true, true));
+    }
+
+    @Test
+    void renovarProfessorNoLimiteComReservaDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.PROFESSOR, 3, true, false));
+    }
+
+    @Test
+    void renovarAlunoNoLimiteEmAtrasoDeveBloquear() {
+        assertFalse(regras.podeRenovar(
+            TipoUsuario.ALUNO, 2, false, true));
+    }
+
+    // Entradas invalidas
+
+    @Test
+    void renovarComQuantidadeNegativaDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.podeRenovar(
+                TipoUsuario.ALUNO, -1, false, false));
+    }
+
+    @Test
+    void renovarComTipoNuloDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.podeRenovar(
+                null, 0, false, false));
+    }
+
+    @Test
+    void renovarVisitanteComQuantidadeNegativaDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.podeRenovar(
+                TipoUsuario.VISITANTE, -1, false, false));
     }
 
 
