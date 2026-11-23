@@ -582,5 +582,169 @@ class RegrasBibliotecaTest {
                 TipoUsuario.VISITANTE, -1, false, false));
     }
 
+    // ========================================
+    // TESTES: multaTotalCentavos
+    // ========================================
+
+    // Array vazio e ausencia de atrasos
+
+    @Test
+    void multaTotalArrayVazioDeveSerZero() {
+        assertEquals(0, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{}));
+    }
+
+    @Test
+    void multaTotalUmEmprestimoSemAtrasoDeveSerZero() {
+        assertEquals(0, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{0}));
+    }
+
+    @Test
+    void multaTotalVariosEmprestimosSemAtrasoDeveSerZero() {
+        assertEquals(0, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{0, 0, 0}));
+    }
+
+    // Multas de ALUNO
+
+    @Test
+    void multaTotalAlunoComUmDiaDeAtraso() {
+        assertEquals(100, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{1}));
+    }
+
+    @Test
+    void multaTotalAlunoComDezDiasDeAtraso() {
+        assertEquals(1000, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{10}));
+    }
+
+    @Test
+    void multaTotalAlunoComOnzeDiasDeAtraso() {
+        assertEquals(1200, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{11}));
+    }
+
+    @Test
+    void multaTotalAlunoComTresEmprestimos() {
+        assertEquals(2700, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{5, 10, 11}));
+    }
+
+    @Test
+    void multaTotalAlunoComEmprestimosDeUmDia() {
+        assertEquals(300, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{1, 1, 1}));
+    }
+
+    @Test
+    void multaTotalAlunoComMultaIndividualLimitada() {
+        assertEquals(5000, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{31}));
+    }
+
+    // Multas de PROFESSOR
+
+    @Test
+    void multaTotalProfessorDentroDaCarencia() {
+        assertEquals(0, regras.multaTotalCentavos(
+            TipoUsuario.PROFESSOR, new int[]{1, 2, 3}));
+    }
+
+    @Test
+    void multaTotalProfessorAposCarencia() {
+        assertEquals(100, regras.multaTotalCentavos(
+            TipoUsuario.PROFESSOR, new int[]{4}));
+    }
+
+    @Test
+    void multaTotalProfessorComTresEmprestimos() {
+        assertEquals(1300, regras.multaTotalCentavos(
+            TipoUsuario.PROFESSOR, new int[]{3, 4, 14}));
+    }
+
+    @Test
+    void multaTotalProfessorComMultaIndividualLimitada() {
+        assertEquals(5000, regras.multaTotalCentavos(
+            TipoUsuario.PROFESSOR, new int[]{34}));
+    }
+
+    // Multas de VISITANTE
+
+    @Test
+    void multaTotalVisitanteComUmEmprestimo() {
+        assertEquals(100, regras.multaTotalCentavos(
+            TipoUsuario.VISITANTE, new int[]{1}));
+    }
+
+    @Test
+    void multaTotalVisitanteComDoisEmprestimos() {
+        assertEquals(1700, regras.multaTotalCentavos(
+            TipoUsuario.VISITANTE, new int[]{5, 11}));
+    }
+
+    // Teto da multa total: 10000 centavos
+
+    @Test
+    void multaTotalAbaixoDoTeto() {
+        assertEquals(9700, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{29, 29, 1}));
+    }
+
+    @Test
+    void multaTotalExatamenteNoTeto() {
+        assertEquals(10000, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{30, 30}));
+    }
+
+    @Test
+    void multaTotalAcimaDoTetoDeveLimitar() {
+        assertEquals(10000, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{30, 30, 1}));
+    }
+
+    @Test
+    void multaTotalTresEmprestimosNoMaximo() {
+        assertEquals(10000, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{30, 30, 30}));
+    }
+
+    @Test
+    void multaTotalDoisEmprestimosComAtrasoExtremo() {
+        assertEquals(10000, regras.multaTotalCentavos(
+            TipoUsuario.ALUNO, new int[]{100, 100}));
+    }
+
+    // Entradas invalidas
+
+    @Test
+    void multaTotalArrayNuloDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.multaTotalCentavos(
+                TipoUsuario.ALUNO, null));
+    }
+
+    @Test
+    void multaTotalTipoNuloDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.multaTotalCentavos(
+                null, new int[]{1}));
+    }
+
+    @Test
+    void multaTotalElementoNegativoDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.multaTotalCentavos(
+                TipoUsuario.ALUNO, new int[]{5, -1, 10}));
+    }
+
+    @Test
+    void multaTotalPrimeiroElementoNegativoDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.multaTotalCentavos(
+                TipoUsuario.ALUNO, new int[]{-1, 5}));
+    }
+
 
 }

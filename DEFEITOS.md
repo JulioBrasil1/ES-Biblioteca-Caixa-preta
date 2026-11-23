@@ -187,3 +187,86 @@
 - **Testes:** `renovarVisitanteSemRenovacoesDeveBloquear`, `renovarVisitanteComUmaRenovacaoDeveBloquear`
 
 **Descrição:** O sistema permite renovações para usuários do tipo VISITANTE, contrariando a regra de que visitantes nunca podem renovar empréstimos. O comportamento incorreto foi observado tanto com zero quanto com uma renovação anterior.
+
+### Defeito 14 — Multa total incorreta para um único empréstimo
+
+- **Método:** `multaTotalCentavos`
+- **Entradas e resultados:**
+
+| Entrada | Esperado | Obtido |
+|---|---:|---:|
+| ALUNO, [1] | 100 | 0 |
+| ALUNO, [10] | 1000 | 0 |
+| ALUNO, [11] | 1200 | 0 |
+| ALUNO, [31] | 5000 | 0 |
+| PROFESSOR, [4] | 100 | 0 |
+| PROFESSOR, [34] | 5000 | 0 |
+| VISITANTE, [1] | 100 | 0 |
+
+- **Técnicas:** Partição de equivalência e análise de valores-limite
+- **Testes:** `multaTotalAlunoComUmDiaDeAtraso`, `multaTotalAlunoComDezDiasDeAtraso`, `multaTotalAlunoComOnzeDiasDeAtraso`, `multaTotalAlunoComMultaIndividualLimitada`, `multaTotalProfessorAposCarencia`, `multaTotalProfessorComMultaIndividualLimitada`, `multaTotalVisitanteComUmEmprestimo`
+
+**Descrição:** O método retorna zero em diversos cenários com um único empréstimo em atraso, mesmo quando a especificação determina cobrança de multa positiva.
+
+### Defeito 15 — Soma incorreta das multas de vários empréstimos
+
+- **Método:** `multaTotalCentavos`
+- **Entradas e resultados:**
+
+| Entrada | Esperado | Obtido |
+|---|---:|---:|
+| ALUNO, [1,1,1] | 300 | 200 |
+| ALUNO, [5,10,11] | 2700 | 2100 |
+| VISITANTE, [5,11] | 1700 | 1100 |
+| ALUNO, [29,29,1] | 9700 | 4900 |
+
+- **Técnica:** Partição de equivalência
+- **Classe:** Vários empréstimos com atraso
+- **Testes:** `multaTotalAlunoComEmprestimosDeUmDia`, `multaTotalAlunoComTresEmprestimos`, `multaTotalVisitanteComDoisEmprestimos`, `multaTotalAbaixoDoTeto`
+
+**Descrição:** O método não retorna a soma correta das multas individuais de todos os empréstimos. Foram observados valores inferiores aos estabelecidos pela especificação.
+
+### Defeito 16 — Cálculo incorreto de multas totais envolvendo professores
+
+- **Método:** `multaTotalCentavos`
+- **Entradas e resultados:**
+
+| Entrada | Esperado | Obtido |
+|---|---:|---:|
+| PROFESSOR, [1,2,3] | 0 | 100 |
+| PROFESSOR, [3,4,14] | 1300 | 1600 |
+
+- **Técnicas:** Partição de equivalência e análise de valores-limite
+- **Fronteira:** Carência de três dias
+- **Testes:** `multaTotalProfessorDentroDaCarencia`, `multaTotalProfessorComTresEmprestimos`
+
+**Descrição:** O método apresenta resultados incorretos para professores, inclusive quando todos os empréstimos estão dentro do período de carência. O comportamento também pode estar relacionado ao defeito de carência identificado anteriormente em `multaCentavos`.
+
+### Defeito 17 — Resultado incorreto quando a soma atinge ou ultrapassa o teto total
+
+- **Método:** `multaTotalCentavos`
+- **Entradas e resultados:**
+
+| Entrada | Esperado | Obtido |
+|---|---:|---:|
+| ALUNO, [30,30] | 10000 | 5000 |
+| ALUNO, [30,30,1] | 10000 | 5100 |
+| ALUNO, [100,100] | 10000 | 5000 |
+
+- **Técnica:** Análise de valores-limite
+- **Fronteira:** Teto total de 10000 centavos
+- **Testes:** `multaTotalExatamenteNoTeto`, `multaTotalAcimaDoTetoDeveLimitar`, `multaTotalDoisEmprestimosComAtrasoExtremo`
+
+**Descrição:** O método retorna valores inferiores a 10000 centavos em cenários cuja soma correta atinge ou ultrapassa esse limite. Os resultados são compatíveis com problemas na totalização das multas.
+
+### Defeito 18 — Elementos negativos não geram exceção
+
+- **Método:** `multaTotalCentavos`
+- **Entradas:** `(ALUNO, [5,-1,10])` e `(ALUNO, [-1,5])`
+- **Resultado esperado:** `IllegalArgumentException`
+- **Resultado obtido:** Nenhuma exceção lançada
+- **Técnicas:** Partição de equivalência inválida e análise de valores-limite
+- **Fronteira:** -1 dia
+- **Testes:** `multaTotalElementoNegativoDeveLancarExcecao`, `multaTotalPrimeiroElementoNegativoDeveLancarExcecao`
+
+**Descrição:** O método aceita arrays contendo quantidades negativas de dias de atraso sem lançar a exceção exigida pela especificação, independentemente de o valor negativo aparecer no início ou no meio do array.

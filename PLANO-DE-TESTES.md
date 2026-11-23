@@ -171,7 +171,9 @@ As nove falhas foram agrupadas em quatro comportamentos incorretos, documentados
 
 **Critério de aprovação:** O empréstimo deve ser permitido somente quando todas as condições da especificação forem satisfeitas. Entradas inválidas devem gerar `IllegalArgumentException`, independentemente das demais condições.
 
-**Resultado da execução:** Foram executados 23 testes de `podeEmprestar`, dos quais 14 passaram e 9 falharam, sem erros de execução.
+**Resultado da execução:** Foram executados 23 testes de `podeEmprestar`, dos quais 15 passaram e 8 falharam, sem erros de execução.
+
+As oito falhas foram agrupadas em quatro comportamentos incorretos, documentados nos Defeitos 08 a 11 do arquivo `DEFEITOS.md`.
 
 **Defeitos identificados:**
 - Empréstimos permitidos mesmo quando o limite de empréstimos ativos foi atingido.
@@ -180,8 +182,6 @@ As nove falhas foram agrupadas em quatro comportamentos incorretos, documentados
 - Ausência de exceção para multa pendente negativa.
 
 **Observação:** Um dos testes também demonstrou comportamento incorreto quando o limite de empréstimos e o limite de multa são violados simultaneamente.
-
-As nove falhas foram agrupadas em quatro comportamentos incorretos, documentados nos Defeitos 08 a 11 do arquivo `DEFEITOS.md`.
 
 ## Método: podeRenovar(TipoUsuario tipo, int renovacoesFeitas, boolean possuiReserva, boolean emAtraso)
 
@@ -250,3 +250,110 @@ As nove falhas foram agrupadas em quatro comportamentos incorretos, documentados
 As três falhas foram agrupadas em dois comportamentos incorretos, documentados nos Defeitos 12 e 13 do arquivo `DEFEITOS.md`.
 
 Os demais testes passaram, incluindo os casos de reserva existente, empréstimo em atraso, entradas inválidas e limite de renovação para alunos.
+
+## Método: multaTotalCentavos(TipoUsuario tipo, int[] diasAtrasoPorEmprestimo)
+
+**Técnicas:** Partição de equivalência e análise de valores-limite.
+
+### Classes de equivalência
+
+| Classe | Descrição | Resultado esperado |
+|---|---|---|
+| CE1 — Válida | Array vazio | 0 |
+| CE2 — Válida | Um ou mais empréstimos sem atraso | 0 |
+| CE3 — Válida | Um empréstimo com atraso | Multa individual conforme especificação |
+| CE4 — Válida | Vários empréstimos com atraso | Soma das multas individuais |
+| CE5 — Válida | PROFESSOR com empréstimos dentro da carência | 0 |
+| CE6 — Válida | PROFESSOR com atrasos superiores à carência | Soma considerando os três dias de carência |
+| CE7 — Válida | Multa individual acima do teto de 5000 centavos | Multa individual limitada a 5000 |
+| CE8 — Válida | Soma das multas inferior a 10000 centavos | Soma calculada |
+| CE9 — Válida | Soma das multas igual a 10000 centavos | 10000 |
+| CE10 — Válida | Soma das multas superior a 10000 centavos | 10000 |
+| CE11 — Inválida | Array nulo | IllegalArgumentException |
+| CE12 — Inválida | Tipo de usuário nulo | IllegalArgumentException |
+| CE13 — Inválida | Array contendo dias negativos | IllegalArgumentException |
+
+### Análise de valores-limite
+
+| Fronteira | Valores ou situações testadas | Resultado esperado |
+|---|---|---|
+| Quantidade de empréstimos | 0, 1 e vários | Soma correspondente |
+| Início do atraso | 0 e 1 dia | 0 e 100 centavos para ALUNO |
+| Mudança de faixa individual | 10 e 11 dias | 1000 e 1200 centavos |
+| Carência de PROFESSOR | 3 e 4 dias | 0 e 100 centavos |
+| Teto individual | 30 e 31 dias para ALUNO | 5000 em ambos |
+| Teto total | Soma inferior, igual e superior a 10000 | Soma ou 10000 |
+| Entrada negativa | -1 dia | IllegalArgumentException |
+
+### Casos de teste implementados
+
+| Teste | Entrada | Esperado |
+|---|---|---:|
+| multaTotalArrayVazioDeveSerZero | ALUNO, [] | 0 |
+| multaTotalUmEmprestimoSemAtrasoDeveSerZero | ALUNO, [0] | 0 |
+| multaTotalVariosEmprestimosSemAtrasoDeveSerZero | ALUNO, [0,0,0] | 0 |
+| multaTotalAlunoComUmDiaDeAtraso | ALUNO, [1] | 100 |
+| multaTotalAlunoComDezDiasDeAtraso | ALUNO, [10] | 1000 |
+| multaTotalAlunoComOnzeDiasDeAtraso | ALUNO, [11] | 1200 |
+| multaTotalAlunoComTresEmprestimos | ALUNO, [5,10,11] | 2700 |
+| multaTotalAlunoComEmprestimosDeUmDia | ALUNO, [1,1,1] | 300 |
+| multaTotalAlunoComMultaIndividualLimitada | ALUNO, [31] | 5000 |
+| multaTotalProfessorDentroDaCarencia | PROFESSOR, [1,2,3] | 0 |
+| multaTotalProfessorAposCarencia | PROFESSOR, [4] | 100 |
+| multaTotalProfessorComTresEmprestimos | PROFESSOR, [3,4,14] | 1300 |
+| multaTotalProfessorComMultaIndividualLimitada | PROFESSOR, [34] | 5000 |
+| multaTotalVisitanteComUmEmprestimo | VISITANTE, [1] | 100 |
+| multaTotalVisitanteComDoisEmprestimos | VISITANTE, [5,11] | 1700 |
+| multaTotalAbaixoDoTeto | ALUNO, [29,29,1] | 9700 |
+| multaTotalExatamenteNoTeto | ALUNO, [30,30] | 10000 |
+| multaTotalAcimaDoTetoDeveLimitar | ALUNO, [30,30,1] | 10000 |
+| multaTotalTresEmprestimosNoMaximo | ALUNO, [30,30,30] | 10000 |
+| multaTotalDoisEmprestimosComAtrasoExtremo | ALUNO, [100,100] | 10000 |
+| multaTotalArrayNuloDeveLancarExcecao | ALUNO, null | Exceção |
+| multaTotalTipoNuloDeveLancarExcecao | null, [1] | Exceção |
+| multaTotalElementoNegativoDeveLancarExcecao | ALUNO, [5,-1,10] | Exceção |
+| multaTotalPrimeiroElementoNegativoDeveLancarExcecao | ALUNO, [-1,5] | Exceção |
+
+**Critério de aprovação:** O método deve somar corretamente as multas individuais de cada empréstimo, respeitar o limite individual de 5000 centavos, aplicar o teto total de 10000 centavos e lançar `IllegalArgumentException` para entradas inválidas.
+
+**Resultado da execução:** Foram executados 24 testes, dos quais 6 passaram e 18 falharam, sem erros de execução.
+
+**Defeitos identificados:**
+- Cálculo incorreto da multa total para um único empréstimo.
+- Soma incorreta das multas de vários empréstimos.
+- Aplicação incorreta das regras de carência para professores.
+- Resultados incorretos em cenários que atingem ou ultrapassam o teto total de 10000 centavos.
+- Ausência de exceção para arrays contendo dias negativos.
+
+As 18 falhas foram agrupadas em cinco comportamentos incorretos, documentados nos Defeitos 14 a 18 do arquivo `DEFEITOS.md`.
+
+**Observação:** Algumas divergências podem estar relacionadas a defeitos já identificados em `multaCentavos`. Entretanto, os testes foram realizados exclusivamente pela interface pública, sem acesso à implementação interna.
+
+
+## Resultado consolidado — Fase 1
+
+A suíte de testes de caixa-preta foi executada utilizando Java, JUnit 5 e Maven, considerando as regras estabelecidas na especificação do sistema de biblioteca.
+
+Foram implementados 105 testes na classe `RegrasBibliotecaTest`, além de um teste fornecido em `ExemploTest`, totalizando 106 testes.
+
+| Método | Testes executados | Aprovados | Falhas |
+|---|---:|---:|---:|
+| prazoDias | 4 | 3 | 1 |
+| dataDevolucao | 8 | 6 | 2 |
+| limiteEmprestimos | 4 | 4 | 0 |
+| multaCentavos | 19 | 10 | 9 |
+| podeEmprestar | 23 | 15 | 8 |
+| podeRenovar | 23 | 20 | 3 |
+| multaTotalCentavos | 24 | 6 | 18 |
+| ExemploTest | 1 | 1 | 0 |
+| **Total** | **106** | **65** | **41** |
+
+**Comando de execução:** `mvn test`
+
+**Resultado:** 106 testes executados, 41 falhas, 0 erros e 0 testes ignorados.
+
+As falhas foram analisadas por comparação entre o comportamento observado e o resultado esperado pela especificação. Os comportamentos incorretos foram agrupados e documentados no arquivo `DEFEITOS.md`.
+
+Os testes foram desenvolvidos sem acesso à implementação interna da biblioteca, utilizando técnicas de partição de equivalência e análise de valores-limite.
+
+A execução do Maven apresentou `BUILD SUCCESS` apesar das falhas de testes, devido à configuração do projeto. Portanto, a avaliação dos resultados foi realizada pelos relatórios do JUnit/Surefire, e não apenas pelo status final do build.
