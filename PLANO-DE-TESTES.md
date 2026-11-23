@@ -23,6 +23,14 @@ O método recebe um valor do enum `TipoUsuario`. Foram identificadas três class
 
 **Técnicas:** Partição de equivalência e análise de valores-limite.
 
+**Resultado da execução:** Foram executados oito testes,
+dos quais seis passaram e dois falharam.
+
+**Defeitos identificados:**
+- Ajuste incorreto da devolução quando a data calculada cai em domingo.
+- Data de devolução incorreta para visitantes, possivelmente
+  relacionada ao defeito encontrado em prazoDias.
+
 ### Classes de equivalência
 
 | Classe | Descrição | Teste |
@@ -42,3 +50,21 @@ O método recebe um valor do enum `TipoUsuario`. Foram identificadas três class
 | Segunda-feira, imediatamente após o domingo | devolucaoNaSegundaDeveSerMantida | Data mantida |
 
 **Critério de aprovação:** A data calculada deve corresponder ao prazo definido para o tipo de usuário, com adiamento somente quando a devolução cair em domingo.
+
+## Método: limiteEmprestimos(TipoUsuario tipo)
+
+**Técnica:** Partição de equivalência.
+
+| Classe | Entrada | Resultado esperado | Teste |
+|---|---|---|---|
+| CE1 — Válida | ALUNO | 3 | alunoDeveTerLimiteDe3Emprestimos |
+| CE2 — Válida | PROFESSOR | 8 | professorDeveTerLimiteDe8Emprestimos |
+| CE3 — Válida | VISITANTE | 1 | visitanteDeveTerLimiteDe1Emprestimo |
+| CE4 — Inválida | null | IllegalArgumentException | tipoNuloEmLimiteEmprestimosDeveLancarExcecao |
+
+**Análise de valor-limite:** Não aplicável à entrada, pois o método recebe um enum sem intervalo numérico.
+
+**Critério de aprovação:** O método deve retornar o limite correspondente ao tipo de usuário e lançar `IllegalArgumentException` para tipo nulo.
+
+**Resultado da execução:** Foram executados quatro testes,
+todos aprovados. Nenhum defeito foi identificado nos casos testados.

@@ -115,5 +115,37 @@ class RegrasBibliotecaTest {
             () -> regras.dataDevolucao(retirada, null));
     }
 
+    // ========================================
+    // TESTES: limiteEmprestimos
+    // ========================================
+
+    // Partições de equivalência válidas
+
+    @Test
+    void alunoDeveTerLimiteDe3Emprestimos() {
+        assertEquals(3,
+            regras.limiteEmprestimos(TipoUsuario.ALUNO));
+    }
+
+    @Test
+    void professorDeveTerLimiteDe8Emprestimos() {
+        assertEquals(8,
+            regras.limiteEmprestimos(TipoUsuario.PROFESSOR));
+    }
+
+    @Test
+    void visitanteDeveTerLimiteDe1Emprestimo() {
+        assertEquals(1,
+            regras.limiteEmprestimos(TipoUsuario.VISITANTE));
+    }
+
+    // Partição de equivalência inválida
+
+    @Test
+    void tipoNuloEmLimiteEmprestimosDeveLancarExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> regras.limiteEmprestimos(null));
+    }
+
 
 }
